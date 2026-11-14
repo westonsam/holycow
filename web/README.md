@@ -11,7 +11,9 @@ npm --prefix web ci
 npm run dev
 ```
 
-Open the Local URL printed by the server, normally `http://127.0.0.1:5173/`. A project-local Node 22.23.5 dev dependency supplies the runtime without changing the machine's default Node installation. Dependencies are pinned through the lockfile. The supplied Sites/Vinext starter provides React, TypeScript, server route handlers and a Worker build; no frontend framework existed previously.
+Open the Local URL printed by the server, normally `http://127.0.0.1:5173/`. Use system Node 22.13 or newer for installation; a project-local Node 22.23.5 dev dependency supplies the npm-script runtime. Dependencies are pinned through the lockfile. The supplied Sites/Vinext starter provides React, TypeScript, server route handlers and a Worker build; no frontend framework existed previously.
+
+On the current Windows machine, clean-install development startup fails inside the Workers runtime with `ERR_RUNTIME_FAILURE`. The built app was verified to serve successfully. From `web/`, use `npm run build`, then `npm start -- --port 8787`, and open `http://127.0.0.1:8787`. Stop running HolyCow servers before `npm ci` to avoid Windows dependency-file locks. See the [repository setup guide](../README.md) for details.
 
 ```powershell
 npm run check:web
