@@ -426,3 +426,12 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# ML datasets, local artifacts and runtime secrets
+/ml/data/
+/ml/outputs/
+/ml/.venv/
+/ml/**/*.ipynb_checkpoints/
+*.pt
+*.pth
+*.ckpt
