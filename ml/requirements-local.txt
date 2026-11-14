@@ -1,0 +1,9 @@
+# Tested together for local stage-3 scaffolding on macOS ARM64 / Python 3.12.
+torch==2.15.0
+torchvision==0.29.2
+opencv-python-headless==5.0.0.93
+numpy==2.5.4
+Pillow==13.0.0
+# Visual walkthrough notebook
+matplotlib==3.11.2
+ipykernel==7.4.0
