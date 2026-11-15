@@ -1,4 +1,8 @@
-// Intentionally empty by default.
-// Add Drizzle tables here when the site actually needs a database.
-// See examples/d1/db/schema.ts for an opt-in example.
-export {};
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+// Only the temporary tunnel address lives here. Evidence and reviews stay on the laptop.
+export const laptopConnection = sqliteTable("laptop_connection", {
+  id: integer("id").primaryKey(),
+  url: text("url").notNull(),
+  updated: integer("updated").notNull(),
+});

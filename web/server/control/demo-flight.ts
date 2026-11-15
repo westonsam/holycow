@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { context, failure } from "./http";
 import { ControlError } from "./monitoring-service";
+import { requireLaptop } from "./laptop";
 
 // Only this server module knows the private loopback service URL.
 export async function demoFlight(request: Request, path: string[]) {
@@ -23,21 +24,24 @@ export async function demoFlight(request: Request, path: string[]) {
       if (body.length > 6000) throw new ControlError("BODY_TOO_LARGE", "Request too large.", 413);
       try { JSON.parse(body); } catch { throw new ControlError("INVALID_JSON", "Invalid JSON."); }
     }
-    const service = (env as unknown as { HOLYCOW_DEMO_SERVICE_URL?: string }).HOLYCOW_DEMO_SERVICE_URL;
-    if (!service) throw new ControlError("DEMO_UNAVAILABLE", "Local demo service is not configured. See the demo startup guide.", 503);
+    const local = ["127.0.0.1", "localhost", "[::1]"].includes(new URL(request.url).hostname);
+    const remote = local ? null : await requireLaptop();
+    const service = remote ? `${remote.url}/flight/` : (env as unknown as { HOLYCOW_DEMO_SERVICE_URL?: string }).HOLYCOW_DEMO_SERVICE_URL;
+    if (!service) throw new ControlError("DEMO_UNAVAILABLE", "Demo backend offline. Start the laptop backend to process flights.", 503);
     const base = new URL(service);
     if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password)
       throw new ControlError("DEMO_UNAVAILABLE", "Invalid local service configuration.", 503);
     const headers = new Headers();
+    if (remote) headers.set("Authorization", `Bearer ${remote.token}`);
     if (!read) headers.set("Content-Type", "application/json");
     if (read && request.headers.has("range")) headers.set("Range", request.headers.get("range")!);
     let response: Response;
     try {
-      response = await fetch(new URL(`/${route}`, base), { method: request.method, headers, body, signal: AbortSignal.timeout(15000), redirect: "manual" });
+      response = await fetch(new URL(route, base), { method: request.method, headers, body, signal: AbortSignal.timeout(15000), redirect: "manual" });
       if (response.status >= 300 && response.status < 400) throw new Error("Unexpected service redirect");
     } catch (error) {
       console.error("Demo HTTP service request failed", error instanceof Error ? error.message : "Network error");
-      throw new ControlError("DEMO_UNAVAILABLE", "Local demo service is unavailable. Start it and retry; existing jobs and reviews are retained.", 503);
+      throw new ControlError("DEMO_UNAVAILABLE", "Demo backend offline. Start it on the laptop and retry; existing jobs and reviews are retained.", 503);
     }
     const output = new Headers({ "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
     for (const name of ["content-type", "content-length", "accept-ranges", "content-range"])

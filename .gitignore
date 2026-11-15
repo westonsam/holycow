@@ -411,6 +411,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# Laptop demo connection secrets and downloaded tunnel executable
+backend/.env.laptop.json
+backend/tools/*.exe
+
 # VS Code files for those working on multiple tools
 .vscode/*
 !.vscode/settings.json

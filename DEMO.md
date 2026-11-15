@@ -1,5 +1,10 @@
 # Local flight evidence demo
 
+For the hosted dashboard connected to the laptop on demand, use
+[Start Demo Backend and hosting instructions](HOSTING.md). The launcher keeps
+this Python service on loopback and forwards only allowlisted operations
+through an authenticated temporary gateway.
+
 This demo runs in `holycow_git`, not the sibling publication copies. It adds a
 separate real pipeline evidence workflow to Flight log; existing fictional
 cattle, alerts, Spotlight, planning and browser-local recordings are unchanged.

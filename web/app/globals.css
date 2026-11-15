@@ -20,6 +20,13 @@
 body {
   margin: 0;
 }
+/* Keep the overview scrollable without a persistent browser scrollbar. */
+html:has(.overview-grid) {
+  scrollbar-width: none;
+}
+html:has(.overview-grid)::-webkit-scrollbar {
+  display: none;
+}
 button,
 input,
 select,

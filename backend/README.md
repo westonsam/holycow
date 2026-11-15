@@ -1,5 +1,10 @@
 # HolyCow alert delivery and rancher feedback
 
+For the public presentation dashboard with an on-demand laptop backend, see
+[HOSTING.md](../HOSTING.md). Its authenticated gateway enables only the shared
+demo controls while the launcher is running. The direct backend and ingestion
+API remain private; this does not add production rancher authentication.
+
 **Use Telegram for live messaging:** [connect a Telegram bot](TELEGRAM.md). The
 backend supports direct video uploads, native replies, durable long polling and
 optional authenticated webhooks. No Twilio account or Codex connector is needed.
@@ -200,8 +205,15 @@ the ML virtual environment (which includes imageio-ffmpeg):
 ml/.venv/Scripts/python.exe -m backend.prepare_demo_video
 ```
 
-The current workspace already has that five-second sample prepared. It is a
-simulator-only stock scene, not proof of the synthetic movement flag or cattle
+To replace only the Telegram/demo-message clip, preserving the full custom clip:
+
+```powershell
+../.cow-vision-venv/Scripts/python.exe -m backend.prepare_demo_video --source C:/Users/fbook/Downloads/cow_message.mp4
+```
+
+This workspace now uses that portrait cow clip, encoded at 720×1280 and 30 fps.
+The backend reads the registered file for each send, so replacement needs no restart.
+It is simulator-only illustrative footage, not proof of the synthetic movement flag or cattle
 identity. The sample alert uses it only when available. It never runs inference
 again or overwrites the original source clip. Docker mounts `backend/evidence`
 read-only at `/evidence`; media is excluded from the image and Git. Set

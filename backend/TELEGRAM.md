@@ -43,10 +43,10 @@ provider calls and do not establish delivery to a phone.
 ## Send a demo to your phone
 
 With the backend and web app running, open **Notifications → Send demo to Telegram**.
-This sends the registered five-second sample MP4 to the configured private chat.
+This sends the registered demo MP4 to the configured private chat.
 The caption includes cow 718, a **DEMO ONLY** reason and an illustrative Netherlands
-location. The cow tag and observation are fictional; the footage is from a farm
-in the Netherlands and does not establish that cow's identity or health.
+location. The cow tag, location and observation are fictional; the footage is
+illustrative and does not establish that cow's identity, location or health.
 
 Use Telegram's **Reply** on the video and write “she's fine, just resting.”
 Confirm the assistant's interpretation with “yep”. Select the alert in the web

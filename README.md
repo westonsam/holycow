@@ -135,4 +135,4 @@ Use the Supabase migration set for the configured development project. **Do not 
 - [Frontend verification notes](web/docs/VERIFICATION.md)
 - [Asset provenance](web/docs/ASSETS.md)
 
-The current hosted preview is [HolyCow Herd Monitor](https://holycow-herd-monitor.freebream261.chatgpt.site). It is owner-only and may require sign-in.
+The public dashboard is [HolyCow Herd Monitor](https://holycow-herd-monitor.freebream261.chatgpt.site). Judges can open it without signing in. See [public demo hosting](HOSTING.md) to connect video processing and Telegram from the laptop on demand.
