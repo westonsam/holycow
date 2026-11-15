@@ -7,7 +7,7 @@ import subprocess
 import cv2
 import imageio_ffmpeg
 
-from cow_segment import draw
+from ml.above.cow_segment import draw
 
 
 def main():

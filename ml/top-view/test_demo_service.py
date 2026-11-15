@@ -11,7 +11,7 @@ import urllib.error
 import uuid
 from unittest.mock import patch
 from http.server import ThreadingHTTPServer
-from demo_service import ASSETS, Problem, Store, handler
+from ml.above.demo_service import ASSETS, Problem, Store, handler
 
 
 def command(mode='precomputed'):

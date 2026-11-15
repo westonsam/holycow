@@ -13,7 +13,7 @@ import time
 import cv2
 import imageio_ffmpeg
 import numpy as np
-from scene_model import SceneSegmenter
+from ml.above.scene_model import SceneSegmenter
 
 
 ROOT = Path(__file__).resolve().parent

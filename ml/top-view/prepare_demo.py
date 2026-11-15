@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 import imageio_ffmpeg
-from demo_service import ASSETS, load_results
+from ml.above.demo_service import ASSETS, load_results
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
