@@ -1,0 +1,35 @@
+.demo-flight-card { padding: 22px; margin-bottom: 24px; }
+.demo-flight-card .card-title { padding: 0 0 14px; }
+.demo-flight-card .dialog-wide { width: 960px; }
+.demo-muted, .demo-footer small { color: var(--muted-foreground, #697363); font-size: 13px; line-height: 1.6; }
+.demo-job { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; padding: 18px 0; border-top: 1px solid #e3e7df; }
+.demo-job > div:first-child { flex: 1; min-width: 180px; }
+.demo-job small, .demo-history small { display: block; margin-top: 5px; color: #687360; }
+.demo-job code { font-size: 11px; color: #687360; }
+.demo-state { text-transform: capitalize; }
+.demo-progress { min-width: 180px; }
+.demo-progress progress { accent-color: #60744a; width: 100%; }
+.demo-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+.demo-form { display: grid; align-content: start; gap: 14px; }
+.demo-form p, .demo-evidence p { font-size: 13px; line-height: 1.6; margin: 0 0 10px; }
+.demo-form label { display: grid; gap: 8px; font-size: 13px; font-weight: 600; }
+.demo-form select, .demo-form textarea { width: 100%; padding: 11px; border: 1px solid #d6ddce; border-radius: 9px; background: #fafbf8; color: #293622; font: inherit; }
+.demo-form textarea { min-height: 90px; resize: vertical; }
+.demo-error { color: #9c392d; background: #fff4ef; padding: 10px; border-radius: 8px; font-size: 13px; }
+.demo-stage { position: relative; width: 100%; background: #111; }
+.demo-stage video { width: 100%; height: 100%; display: block; object-fit: contain; }
+.demo-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.demo-overlay rect { fill: transparent; stroke: #a4ff68; stroke-width: 5; pointer-events: auto; cursor: pointer; }
+.demo-overlay rect.selected { stroke: #ffce55; stroke-width: 10; fill: #ffce5533; }
+.demo-evidence-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 22px; }
+.demo-evidence h3 { font-size: 14px; margin: 0 0 12px; }
+.demo-evidence h3.demo-detection-heading { margin-top: 18px; }
+.demo-detections { display: flex; flex-wrap: wrap; gap: 7px; max-height: 190px; overflow: auto; margin-bottom: 20px; }
+.demo-detections .secondary-button, .demo-flags .secondary-button { font-size: 12px; padding: 7px 10px; }
+.demo-flags { display: grid; gap: 7px; max-height: 180px; overflow: auto; }
+.demo-selected { outline: 2px solid #71834e; }
+.demo-review-actions { display: flex; gap: 8px; }
+.demo-history { border-top: 1px solid #e3e7df; padding-top: 10px; font-size: 12px; overflow-wrap: anywhere; }
+.demo-stage:fullscreen { height: 100vh; width: 100vw; aspect-ratio: auto !important; display: grid; place-items: center; }
+.demo-stage:fullscreen .demo-overlay { object-fit: contain; }
+@media (max-width: 650px) { .demo-evidence-columns { grid-template-columns: 1fr; } .demo-flight-card .card-title { flex-wrap: wrap; gap: 12px; } }

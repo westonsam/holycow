@@ -1,0 +1,12 @@
+{
+  "project_ref": "enlvqgssvdrigffmlqvh",
+  "name": "holycow-dev",
+  "organization": "holycow",
+  "organization_id": "aleaagxsrkcbmcscjzqg",
+  "region": "us-west-1",
+  "url": "https://enlvqgssvdrigffmlqvh.supabase.co",
+  "database_schema": "cattle",
+  "storage_bucket": "cattle-evidence",
+  "cattle_data_api_exposure": "disabled_backend_only",
+  "application_database_role": "cattle_backend_user"
+}

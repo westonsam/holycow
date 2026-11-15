@@ -1,0 +1,153 @@
+{
+  "model": "OpenCV random forest pixel segmentation",
+  "trees": 32,
+  "seed": 42,
+  "features": "BGR, Lab, HSV",
+  "training_frame": 0,
+  "source": "C:\\Users\\fbook\\Downloads\\13277315-uhd_3840_2160_25fps.mp4",
+  "foreground_pixels": 20000,
+  "background_pixels": 140000,
+  "supervision": "Reviewed rectangles, GrabCut-generated weak masks",
+  "limitations": "Scene-specific color model; no species recognition; not a general cattle detector",
+  "training_boxes": [
+    [
+      87,
+      350,
+      157,
+      402
+    ],
+    [
+      415,
+      350,
+      473,
+      416
+    ],
+    [
+      587,
+      211,
+      639,
+      266
+    ],
+    [
+      631,
+      213,
+      669,
+      269
+    ],
+    [
+      755,
+      188,
+      804,
+      254
+    ],
+    [
+      769,
+      315,
+      808,
+      381
+    ],
+    [
+      761,
+      415,
+      804,
+      490
+    ],
+    [
+      959,
+      478,
+      1008,
+      538
+    ],
+    [
+      378,
+      515,
+      461,
+      575
+    ],
+    [
+      285,
+      555,
+      353,
+      619
+    ],
+    [
+      176,
+      617,
+      267,
+      683
+    ],
+    [
+      751,
+      632,
+      810,
+      701
+    ],
+    [
+      858,
+      662,
+      901,
+      753
+    ],
+    [
+      950,
+      786,
+      1017,
+      869
+    ],
+    [
+      2750,
+      970,
+      2818,
+      1061
+    ],
+    [
+      2073,
+      1161,
+      2180,
+      1229
+    ],
+    [
+      1057,
+      1322,
+      1161,
+      1422
+    ],
+    [
+      341,
+      1361,
+      420,
+      1483
+    ],
+    [
+      1203,
+      1471,
+      1315,
+      1555
+    ],
+    [
+      1284,
+      1515,
+      1391,
+      1614
+    ],
+    [
+      3256,
+      1420,
+      3351,
+      1494
+    ],
+    [
+      995,
+      1607,
+      1107,
+      1705
+    ],
+    [
+      9,
+      1605,
+      107,
+      1708
+    ]
+  ],
+  "probabilities": "Random-forest vote fractions, not calibrated confidence"
+}

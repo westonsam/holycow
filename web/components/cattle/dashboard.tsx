@@ -47,6 +47,8 @@ import { Dialog } from "./dialog";
 import { PastureMap } from "./pasture-map";
 import { assessmentLabels, Dot, StatusBadge, time } from "./status";
 import { Spotlight } from "./spotlight";
+import { DemoFlight } from "./demo-flight";
+import { Notifications } from "./notifications";
 
 const STORAGE = "holycow.workspace.v1";
 type Modal =
@@ -82,6 +84,7 @@ const sections: { id: Section; label: string; icon: typeof Map }[] = [
   { id: "cattle", label: "Cattle register", icon: Table2 },
   { id: "spotlight", label: "Spotlight", icon: Star },
   { id: "flights", label: "Flight log", icon: Plane },
+  { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
 export default function Dashboard() {
@@ -743,7 +746,9 @@ export default function Dashboard() {
                           ? "Your herd, one animal at a time."
                           : section === "spotlight"
                             ? "Important cows. Their latest recorded moments."
-                            : "Capture history and upcoming pasture checks."}
+                            : section === "notifications"
+                              ? "Alert delivery and rancher feedback."
+                              : "Capture history and upcoming pasture checks."}
                     </p>
                   </div>
                   <div className="header-actions">
@@ -751,6 +756,7 @@ export default function Dashboard() {
                     {demoButton}
                   </div>
                 </header>
+                {section === "notifications" && <Notifications />}
                 {section === "spotlight" && (
                   <Spotlight
                     animals={animals}
@@ -1050,6 +1056,7 @@ export default function Dashboard() {
                 )}
                 {section === "flights" && (
                   <>
+                    <DemoFlight />
                     <div className="flight-summary-grid">
                       <div className="card summary-stat">
                         <span>

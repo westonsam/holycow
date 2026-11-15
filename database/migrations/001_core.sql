@@ -1,0 +1,340 @@
+-- PostgreSQL 16+ / PostGIS 3.x. Run once with psql -v ON_ERROR_STOP=1.
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE SCHEMA cattle;
+SET LOCAL search_path = cattle, public;
+
+CREATE TABLE organization (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+-- subject is the verified external auth issuer+subject; never a password.
+CREATE TABLE membership (
+  org_id uuid NOT NULL REFERENCES organization(id),
+  issuer text NOT NULL, subject text NOT NULL,
+  role text NOT NULL CHECK (role IN ('owner','admin','operator','reviewer','viewer')),
+  PRIMARY KEY (org_id,issuer,subject)
+);
+CREATE TABLE ranch (
+  org_id uuid NOT NULL REFERENCES organization(id), id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL, PRIMARY KEY(org_id,id)
+);
+CREATE TABLE pasture (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), ranch_id uuid NOT NULL,
+  name text NOT NULL, PRIMARY KEY(org_id,id),
+  FOREIGN KEY(org_id,ranch_id) REFERENCES ranch(org_id,id)
+);
+CREATE TABLE boundary_version (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), pasture_id uuid NOT NULL,
+  valid_during tstzrange NOT NULL,
+  geom geometry(MultiPolygon,4326) NOT NULL,
+  policy_version text NOT NULL, recorded_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), FOREIGN KEY(org_id,pasture_id) REFERENCES pasture(org_id,id),
+  CHECK(NOT isempty(valid_during) AND lower(valid_during) IS NOT NULL
+    AND lower_inc(valid_during) AND NOT upper_inc(valid_during)),
+  CHECK(ST_IsValid(geom) AND NOT ST_IsEmpty(geom)),
+  EXCLUDE USING gist(org_id WITH =,pasture_id WITH =,valid_during WITH &&)
+);
+CREATE TABLE herd (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), ranch_id uuid NOT NULL,
+  name text NOT NULL, PRIMARY KEY(org_id,id),
+  FOREIGN KEY(org_id,ranch_id) REFERENCES ranch(org_id,id)
+);
+CREATE TABLE animal (
+  org_id uuid NOT NULL REFERENCES organization(id), id uuid NOT NULL DEFAULT gen_random_uuid(),
+  display_name text, retired_at timestamptz, PRIMARY KEY(org_id,id)
+);
+CREATE TABLE animal_identifier (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), animal_id uuid NOT NULL,
+  namespace text NOT NULL, value text NOT NULL, valid_during tstzrange NOT NULL,
+  PRIMARY KEY(org_id,id), FOREIGN KEY(org_id,animal_id) REFERENCES animal(org_id,id),
+  CHECK(NOT isempty(valid_during) AND lower(valid_during) IS NOT NULL
+    AND lower_inc(valid_during) AND NOT upper_inc(valid_during)),
+  EXCLUDE USING gist(org_id WITH =,namespace WITH =,value WITH =,valid_during WITH &&)
+);
+CREATE TABLE herd_membership (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), animal_id uuid NOT NULL,
+  herd_id uuid NOT NULL, valid_during tstzrange NOT NULL,
+  PRIMARY KEY(org_id,id), FOREIGN KEY(org_id,animal_id) REFERENCES animal(org_id,id),
+  FOREIGN KEY(org_id,herd_id) REFERENCES herd(org_id,id),
+  CHECK(NOT isempty(valid_during) AND lower(valid_during) IS NOT NULL
+    AND lower_inc(valid_during) AND NOT upper_inc(valid_during)),
+  EXCLUDE USING gist(org_id WITH =,animal_id WITH =,valid_during WITH &&)
+);
+CREATE TABLE drone (
+  org_id uuid NOT NULL REFERENCES organization(id), id uuid NOT NULL DEFAULT gen_random_uuid(),
+  source_key text NOT NULL, name text NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,source_key)
+);
+CREATE TABLE flight (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), drone_id uuid NOT NULL,
+  ranch_id uuid NOT NULL, source_key text NOT NULL, started_at timestamptz NOT NULL,
+  ended_at timestamptz, ingested_at timestamptz NOT NULL DEFAULT now(),
+  coverage geometry(MultiPolygon,4326), coverage_method text,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,source_key),
+  FOREIGN KEY(org_id,drone_id) REFERENCES drone(org_id,id),
+  FOREIGN KEY(org_id,ranch_id) REFERENCES ranch(org_id,id),
+  CHECK(ended_at IS NULL OR ended_at >= started_at),
+  CHECK(coverage IS NULL OR (ST_IsValid(coverage) AND NOT ST_IsEmpty(coverage))),
+  CHECK(coverage IS NULL OR coverage_method IS NOT NULL)
+);
+CREATE TABLE telemetry (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), flight_id uuid NOT NULL,
+  source_key text NOT NULL, observed_at timestamptz NOT NULL, ingested_at timestamptz NOT NULL DEFAULT now(),
+  drone_position geography(Point,4326), altitude_m double precision, battery_percent numeric,
+  clock_quality text NOT NULL, payload_schema text NOT NULL, payload jsonb NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,flight_id,source_key),
+  FOREIGN KEY(org_id,flight_id) REFERENCES flight(org_id,id),
+  CHECK(battery_percent BETWEEN 0 AND 100), CHECK(jsonb_typeof(payload)='object')
+);
+-- Parsed cow identity is a claim, not automatically an accepted RFID association.
+CREATE TABLE clip (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), flight_id uuid NOT NULL,
+  source_key text NOT NULL, parsed_animal_id uuid, parsed_identifier text,
+  started_at timestamptz NOT NULL, duration_ms bigint NOT NULL CHECK(duration_ms>0),
+  fps numeric NOT NULL CHECK(fps>0), expected_image_count integer NOT NULL CHECK(expected_image_count>0),
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,flight_id,source_key), UNIQUE(org_id,id,flight_id),
+  FOREIGN KEY(org_id,flight_id) REFERENCES flight(org_id,id),
+  FOREIGN KEY(org_id,parsed_animal_id) REFERENCES animal(org_id,id)
+);
+CREATE TABLE media_asset (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), flight_id uuid NOT NULL,
+  source_key text NOT NULL, clip_id uuid, image_index integer CHECK(image_index>=0),
+  kind text NOT NULL CHECK(kind IN ('image','video')),
+  object_key text NOT NULL, sha256 text NOT NULL CHECK(sha256 ~ '^[a-f0-9]{64}$'),
+  size_bytes bigint NOT NULL CHECK(size_bytes>0), state text NOT NULL DEFAULT 'pending'
+    CHECK(state IN ('pending','ready','failed','purged')),
+  captured_at timestamptz NOT NULL, ingested_at timestamptz NOT NULL DEFAULT now(),
+  width_px integer NOT NULL CHECK(width_px>0), height_px integer NOT NULL CHECK(height_px>0),
+  duration_ms bigint, sensor_key text NOT NULL, capture_schema text NOT NULL, capture jsonb NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,flight_id,source_key), UNIQUE(org_id,object_key),
+  UNIQUE(org_id,id,flight_id),
+  FOREIGN KEY(org_id,flight_id) REFERENCES flight(org_id,id),
+  FOREIGN KEY(org_id,clip_id,flight_id) REFERENCES clip(org_id,id,flight_id),
+  UNIQUE(org_id,clip_id,image_index),
+  CHECK((clip_id IS NULL AND image_index IS NULL) OR
+    (clip_id IS NOT NULL AND image_index IS NOT NULL AND kind='image')),
+  CHECK((kind='video' AND duration_ms>0) OR (kind='image' AND duration_ms IS NULL)),
+  CHECK(jsonb_typeof(capture)='object')
+);
+CREATE TABLE frame (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), asset_id uuid NOT NULL,
+  flight_id uuid NOT NULL, offset_ms bigint NOT NULL CHECK(offset_ms>=0),
+  captured_at timestamptz NOT NULL, clock_quality text NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,asset_id,offset_ms), UNIQUE(org_id,id,flight_id),
+  FOREIGN KEY(org_id,asset_id,flight_id) REFERENCES media_asset(org_id,id,flight_id)
+);
+CREATE TABLE model_version (
+  org_id uuid NOT NULL REFERENCES organization(id), id uuid NOT NULL DEFAULT gen_random_uuid(),
+  model_name text NOT NULL, version text NOT NULL,
+  artifact_sha256 text NOT NULL CHECK(artifact_sha256 ~ '^[a-f0-9]{64}$'),
+  taxonomy_version text NOT NULL, score_meaning text NOT NULL, calibration_version text,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,model_name,version)
+);
+CREATE TABLE inference_run (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), flight_id uuid NOT NULL,
+  model_version_id uuid NOT NULL, request_key text NOT NULL,
+  retry_of uuid, config_schema text NOT NULL, config jsonb NOT NULL,
+  processing_version text NOT NULL, status text NOT NULL DEFAULT 'queued'
+    CHECK(status IN ('queued','running','succeeded','failed')),
+  created_at timestamptz NOT NULL DEFAULT now(), started_at timestamptz, ended_at timestamptz,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,request_key), UNIQUE(org_id,id,flight_id),
+  FOREIGN KEY(org_id,flight_id) REFERENCES flight(org_id,id),
+  FOREIGN KEY(org_id,model_version_id) REFERENCES model_version(org_id,id),
+  FOREIGN KEY(org_id,retry_of) REFERENCES inference_run(org_id,id),
+  CHECK(retry_of IS DISTINCT FROM id), CHECK(jsonb_typeof(config)='object'),
+  CHECK(ended_at IS NULL OR (started_at IS NOT NULL AND ended_at>=started_at)),
+  CHECK(status NOT IN ('succeeded','failed') OR ended_at IS NOT NULL)
+);
+CREATE TABLE run_input (
+  org_id uuid NOT NULL, run_id uuid NOT NULL, frame_id uuid NOT NULL, flight_id uuid NOT NULL,
+  PRIMARY KEY(org_id,run_id,frame_id),
+  FOREIGN KEY(org_id,run_id,flight_id) REFERENCES inference_run(org_id,id,flight_id),
+  FOREIGN KEY(org_id,frame_id,flight_id) REFERENCES frame(org_id,id,flight_id)
+);
+-- Original model payloads, never review decisions. Other outputs can annotate detections via output_input.
+CREATE TABLE model_output (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), run_id uuid NOT NULL,
+  frame_id uuid NOT NULL, flight_id uuid NOT NULL, source_key text NOT NULL,
+  kind text NOT NULL CHECK(kind IN ('detection','identity','location','measurement','finding','survey')),
+  schema_version text NOT NULL, payload jsonb NOT NULL, score double precision,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,run_id,source_key), UNIQUE(org_id,id,flight_id),
+  UNIQUE(org_id,id,run_id,frame_id),
+  FOREIGN KEY(org_id,run_id,frame_id) REFERENCES run_input(org_id,run_id,frame_id),
+  FOREIGN KEY(org_id,run_id,flight_id) REFERENCES inference_run(org_id,id,flight_id),
+  CHECK(jsonb_typeof(payload)='object'), CHECK(score>=0 AND score<=1)
+);
+CREATE TABLE output_input (
+  org_id uuid NOT NULL, output_id uuid NOT NULL, input_output_id uuid NOT NULL,
+  PRIMARY KEY(org_id,output_id,input_output_id), CHECK(output_id<>input_output_id),
+  FOREIGN KEY(org_id,output_id) REFERENCES model_output(org_id,id),
+  FOREIGN KEY(org_id,input_output_id) REFERENCES model_output(org_id,id)
+);
+CREATE TABLE model_measurement (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), output_id uuid NOT NULL,
+  metric_code text NOT NULL, value numeric NOT NULL, unit text NOT NULL,
+  scale_version text NOT NULL, scale_min numeric, scale_max numeric,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,output_id,metric_code),
+  FOREIGN KEY(org_id,output_id) REFERENCES model_output(org_id,id),
+  CHECK(value NOT IN ('NaN'::numeric,'Infinity'::numeric,'-Infinity'::numeric)),
+  CHECK((scale_min IS NULL AND scale_max IS NULL) OR
+    (scale_min IS NOT NULL AND scale_max IS NOT NULL AND scale_min<scale_max
+      AND value BETWEEN scale_min AND scale_max))
+);
+CREATE TABLE detection (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), output_id uuid NOT NULL,
+  run_id uuid NOT NULL, frame_id uuid NOT NULL, class_label text NOT NULL,
+  x_min double precision NOT NULL, y_min double precision NOT NULL,
+  x_max double precision NOT NULL, y_max double precision NOT NULL,
+  mask_object_key text,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,output_id), UNIQUE(org_id,id,run_id),
+  FOREIGN KEY(org_id,output_id,run_id,frame_id) REFERENCES model_output(org_id,id,run_id,frame_id),
+  CHECK(x_min>=0 AND y_min>=0 AND x_max<=1 AND y_max<=1 AND x_min<x_max AND y_min<y_max)
+);
+CREATE TABLE track (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), run_id uuid NOT NULL,
+  flight_id uuid NOT NULL, local_key text NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,run_id,local_key), UNIQUE(org_id,id,run_id),
+  UNIQUE(org_id,id,flight_id),
+  FOREIGN KEY(org_id,run_id,flight_id) REFERENCES inference_run(org_id,id,flight_id)
+);
+CREATE TABLE track_detection (
+  org_id uuid NOT NULL, track_id uuid NOT NULL, detection_id uuid NOT NULL, run_id uuid NOT NULL,
+  PRIMARY KEY(org_id,track_id,detection_id), UNIQUE(org_id,detection_id),
+  FOREIGN KEY(org_id,track_id,run_id) REFERENCES track(org_id,id,run_id),
+  FOREIGN KEY(org_id,detection_id,run_id) REFERENCES detection(org_id,id,run_id)
+);
+CREATE TABLE identity_decision (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), track_id uuid NOT NULL,
+  animal_id uuid, supersedes uuid, decision text NOT NULL CHECK(decision IN ('accepted','unresolved','rejected')),
+  method_version text NOT NULL, score double precision CHECK(score>=0 AND score<=1),
+  actor text NOT NULL, reason text NOT NULL, decided_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,id,track_id), UNIQUE(org_id,supersedes),
+  FOREIGN KEY(org_id,track_id) REFERENCES track(org_id,id),
+  FOREIGN KEY(org_id,animal_id) REFERENCES animal(org_id,id),
+  FOREIGN KEY(org_id,supersedes,track_id) REFERENCES identity_decision(org_id,id,track_id),
+  CHECK(supersedes IS DISTINCT FROM id), CHECK(decision<>'accepted' OR animal_id IS NOT NULL)
+);
+CREATE UNIQUE INDEX identity_one_root ON identity_decision(org_id,track_id) WHERE supersedes IS NULL;
+CREATE TABLE identity_evidence (
+  org_id uuid NOT NULL, decision_id uuid NOT NULL, output_id uuid NOT NULL,
+  PRIMARY KEY(org_id,decision_id,output_id),
+  FOREIGN KEY(org_id,decision_id) REFERENCES identity_decision(org_id,id),
+  FOREIGN KEY(org_id,output_id) REFERENCES model_output(org_id,id)
+);
+-- Immutable resolved location revisions, independent from raw predictions and identity.
+CREATE TABLE location_observation (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), track_id uuid NOT NULL,
+  flight_id uuid NOT NULL, output_id uuid NOT NULL, supersedes uuid,
+  event_at timestamptz NOT NULL, recorded_at timestamptz NOT NULL DEFAULT now(),
+  position geography(Point,4326), uncertainty_m double precision CHECK(uncertainty_m>=0),
+  assessment text NOT NULL CHECK(assessment IN ('accepted','not_assessable','rejected')),
+  method_version text NOT NULL, actor text NOT NULL, reason text NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,id,track_id,event_at), UNIQUE(org_id,supersedes),
+  FOREIGN KEY(org_id,track_id,flight_id) REFERENCES track(org_id,id,flight_id),
+  FOREIGN KEY(org_id,output_id,flight_id) REFERENCES model_output(org_id,id,flight_id),
+  FOREIGN KEY(org_id,supersedes,track_id,event_at) REFERENCES location_observation(org_id,id,track_id,event_at),
+  CHECK(supersedes IS DISTINCT FROM id), CHECK(assessment<>'accepted' OR position IS NOT NULL),
+  CHECK(assessment<>'not_assessable' OR position IS NULL)
+);
+CREATE UNIQUE INDEX location_one_root ON location_observation(org_id,track_id,event_at) WHERE supersedes IS NULL;
+CREATE TABLE finding (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(),
+  detection_id uuid, track_id uuid, animal_id uuid, herd_id uuid,
+  event_at timestamptz NOT NULL, label text NOT NULL, severity text NOT NULL
+    CHECK(severity IN ('info','review','priority')),
+  assessment text NOT NULL CHECK(assessment IN ('suspected','assessed_negative','not_assessable')),
+  policy_version text NOT NULL, actor text NOT NULL, recorded_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), CHECK(num_nonnulls(detection_id,track_id,animal_id,herd_id)=1),
+  FOREIGN KEY(org_id,detection_id) REFERENCES detection(org_id,id),
+  FOREIGN KEY(org_id,track_id) REFERENCES track(org_id,id),
+  FOREIGN KEY(org_id,animal_id) REFERENCES animal(org_id,id),
+  FOREIGN KEY(org_id,herd_id) REFERENCES herd(org_id,id)
+);
+CREATE TABLE finding_evidence (
+  org_id uuid NOT NULL, finding_id uuid NOT NULL, output_id uuid NOT NULL,
+  PRIMARY KEY(org_id,finding_id,output_id),
+  FOREIGN KEY(org_id,finding_id) REFERENCES finding(org_id,id),
+  FOREIGN KEY(org_id,output_id) REFERENCES model_output(org_id,id)
+);
+CREATE TABLE finding_review (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), finding_id uuid NOT NULL,
+  supersedes uuid, decision text NOT NULL CHECK(decision IN ('accepted','rejected','needs_review')),
+  actor text NOT NULL, reason text NOT NULL, reviewed_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,id,finding_id), UNIQUE(org_id,supersedes),
+  FOREIGN KEY(org_id,finding_id) REFERENCES finding(org_id,id),
+  FOREIGN KEY(org_id,supersedes,finding_id) REFERENCES finding_review(org_id,id,finding_id),
+  CHECK(supersedes IS DISTINCT FROM id)
+);
+CREATE UNIQUE INDEX review_one_root ON finding_review(org_id,finding_id) WHERE supersedes IS NULL;
+CREATE TABLE survey (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), herd_id uuid NOT NULL,
+  flight_id uuid NOT NULL, event_at timestamptz NOT NULL, supersedes uuid,
+  estimate integer CHECK(estimate>=0), lower_count integer CHECK(lower_count>=0),
+  upper_count integer, coverage_fraction double precision CHECK(coverage_fraction BETWEEN 0 AND 1),
+  surveyed_area geometry(MultiPolygon,4326), method_version text NOT NULL,
+  uncertainty_note text NOT NULL, actor text NOT NULL, recorded_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,id,herd_id,flight_id), UNIQUE(org_id,supersedes),
+  FOREIGN KEY(org_id,herd_id) REFERENCES herd(org_id,id),
+  FOREIGN KEY(org_id,flight_id) REFERENCES flight(org_id,id),
+  FOREIGN KEY(org_id,supersedes,herd_id,flight_id) REFERENCES survey(org_id,id,herd_id,flight_id),
+  CHECK(supersedes IS DISTINCT FROM id),
+  CHECK((estimate IS NULL AND lower_count IS NULL AND upper_count IS NULL)
+     OR (estimate IS NOT NULL AND lower_count IS NOT NULL AND upper_count IS NOT NULL
+         AND lower_count<=estimate AND estimate<=upper_count)),
+  CHECK(surveyed_area IS NULL OR (ST_IsValid(surveyed_area) AND NOT ST_IsEmpty(surveyed_area)))
+);
+CREATE UNIQUE INDEX survey_one_root ON survey(org_id,herd_id,flight_id) WHERE supersedes IS NULL;
+CREATE TABLE survey_input (
+  org_id uuid NOT NULL, survey_id uuid NOT NULL, run_id uuid NOT NULL,
+  PRIMARY KEY(org_id,survey_id,run_id),
+  FOREIGN KEY(org_id,survey_id) REFERENCES survey(org_id,id),
+  FOREIGN KEY(org_id,run_id) REFERENCES inference_run(org_id,id)
+);
+CREATE TABLE alert_rule_version (
+  org_id uuid NOT NULL REFERENCES organization(id), id uuid NOT NULL DEFAULT gen_random_uuid(),
+  rule_key text NOT NULL, version text NOT NULL, policy jsonb NOT NULL,
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,rule_key,version), CHECK(jsonb_typeof(policy)='object')
+);
+CREATE TABLE alert (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), rule_version_id uuid NOT NULL,
+  basis_identity_decision_id uuid,
+  finding_id uuid NOT NULL, dedupe_key text NOT NULL, opened_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,dedupe_key),
+  FOREIGN KEY(org_id,rule_version_id) REFERENCES alert_rule_version(org_id,id),
+  FOREIGN KEY(org_id,basis_identity_decision_id) REFERENCES identity_decision(org_id,id),
+  FOREIGN KEY(org_id,finding_id) REFERENCES finding(org_id,id)
+);
+CREATE TABLE alert_event (
+  org_id uuid NOT NULL, id uuid NOT NULL DEFAULT gen_random_uuid(), alert_id uuid NOT NULL,
+  supersedes uuid, state text NOT NULL CHECK(state IN ('open','acknowledged','resolved','invalidated')),
+  actor text NOT NULL, reason text NOT NULL, happened_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(org_id,id), UNIQUE(org_id,id,alert_id), UNIQUE(org_id,supersedes),
+  FOREIGN KEY(org_id,alert_id) REFERENCES alert(org_id,id),
+  FOREIGN KEY(org_id,supersedes,alert_id) REFERENCES alert_event(org_id,id,alert_id),
+  CHECK(supersedes IS DISTINCT FROM id)
+);
+CREATE UNIQUE INDEX alert_one_root ON alert_event(org_id,alert_id) WHERE supersedes IS NULL;
+CREATE TABLE audit_event (
+  org_id uuid NOT NULL REFERENCES organization(id), id uuid NOT NULL DEFAULT gen_random_uuid(),
+  actor text NOT NULL, action text NOT NULL, happened_at timestamptz NOT NULL DEFAULT now(),
+  detail_schema text NOT NULL, detail jsonb NOT NULL,
+  PRIMARY KEY(org_id,id), CHECK(jsonb_typeof(detail)='object')
+);
+
+CREATE INDEX location_track_time ON location_observation(org_id,track_id,event_at DESC,id DESC);
+CREATE INDEX location_space ON location_observation USING gist(position);
+CREATE INDEX boundary_space ON boundary_version USING gist(geom);
+CREATE INDEX flight_time ON flight(org_id,ranch_id,started_at DESC,id DESC);
+CREATE INDEX frame_time ON frame(org_id,flight_id,captured_at,id);
+CREATE INDEX telemetry_time ON telemetry(org_id,flight_id,observed_at DESC,id DESC);
+CREATE INDEX run_flight ON inference_run(org_id,flight_id,status);
+CREATE INDEX output_frame ON model_output(org_id,frame_id,kind);
+CREATE INDEX finding_time ON finding(org_id,event_at DESC,id DESC);
+CREATE INDEX finding_track ON finding(org_id,track_id,event_at DESC);
+CREATE INDEX alert_finding ON alert(org_id,finding_id);
+CREATE INDEX membership_herd ON herd_membership(org_id,herd_id);
+-- Add FK maintenance indexes where a left-prefix index is not already present.
+-- Deliberately no blanket JSONB GIN indexes or partitioning.
+COMMIT;

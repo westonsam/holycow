@@ -7,7 +7,7 @@ import type {
   LatestRecording,
 } from "./contracts";
 
-async function api<T>(url: string, init?: RequestInit): Promise<T> {
+export async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, cache: "no-store" });
   const body = (await response.json().catch(() => null)) as
     | (ApiEnvelope<T> & Partial<ApiFailure>)

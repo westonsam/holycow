@@ -1,5 +1,7 @@
 # Cow segmentation demo
 
+For the end-to-end dashboard workflow, read [DEMO.md](../DEMO.md). `demo_service.py` wraps this pipeline over loopback HTTP with background jobs and SQLite review history. `prepare_demo.py` prepares playback and compact boxes from actual pipeline output; the labeled precomputed mode runs without inference or ML imports. The browser accesses it only through the web control layer.
+
 For the prepared Windows environment, run `./run-demo.ps1` from this directory.
 It renders boxes and masks, then validates the resulting video and prediction
 coordinates. Pass `-Source`, `-Output`, or `-Python` to override its defaults.

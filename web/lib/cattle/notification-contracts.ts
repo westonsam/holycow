@@ -1,0 +1,4 @@
+export type NotificationFeedback = { verdict: "valid" | "false_positive" | "uncertain"; note: string; method: string; agent_version: string; created: number };
+export type NotificationAlert = { id: string; code: string; source: "simulation" | "live"; telegramDemo?: boolean; cowNumber: string; location: string; summary: string; modelVersion: string; severity: string; state: string; feedback: NotificationFeedback[] };
+export type NotificationMessage = { id: string; alert: string | null; kind: string; direction: "incoming" | "outgoing"; body: string; transport: "simulator" | "twilio" | "telegram"; state: string; error: string | null; created: number };
+export type NotificationSnapshot = { health: { ready: boolean; transport: string; agent: string; telegramConfigured?: boolean; telegramReceiverReady?: boolean; telegramUpdates?: string }; alerts: NotificationAlert[]; messages: NotificationMessage[] };

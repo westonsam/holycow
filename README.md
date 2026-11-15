@@ -2,7 +2,7 @@
 
 HolyCow is a cattle monitoring dashboard for reviewing drone observations, finding cattle that need attention, and following important animals over time. It includes a React/TypeScript web app, a backend/control-layer skeleton, and PostgreSQL/PostGIS migrations for Supabase.
 
-The dashboard currently uses **synthetic demo data**. The Supabase development database is configured separately; real authentication, ingestion, and footage are not connected to the app yet.
+The dashboard currently uses **synthetic demo data**. Flight log also has a separate local evidence demo using actual output from the scene-specific Python pipeline, with durable SQLite reviews. See [startup and the three-minute walkthrough](DEMO.md). The Supabase development database is configured separately; real authentication and ranch ingestion remain unconnected.
 
 ## Features
 
@@ -11,7 +11,8 @@ The dashboard currently uses **synthetic demo data**. The Supabase development d
 - **Cattle register:** search, filtering, sorting, pagination, CSV export, and animal details.
 - **Spotlight:** favorite cows displayed as bubble cards with cow numbers, alert badges, and recording previews.
 - **Recordings:** attach a local clip, extract its thumbnail, and play it with native controls. Clips remain in this browser and are not uploaded.
-- **Flight log:** sample flight history, processing summaries, and local flight planning.
+- **Flight log:** sample history and local planning, plus Process demo flight → background inference or labeled precomputed results → video evidence → durable observation reviews.
+- **Notifications:** independent alert backend, durable outbox/inbox, direct Telegram text/video delivery, a labeled phone demo, contextual Telegram replies and saved feedback for future model review. See [Telegram bot setup](backend/TELEGRAM.md) and [Docker deployment](backend/README.md). Hosting and live bot configuration remain separate setup steps.
 
 ## Repository layout
 
@@ -118,7 +119,7 @@ Live integration still needs verified authentication and tenant context, a serve
 - Assessments are model observations for review, not veterinary diagnoses. Missing evidence is not classified as healthy.
 - Favorites and demo edits persist in browser local storage. Attached recordings persist separately in IndexedDB and can be removed through the recording viewer.
 - Generic cow previews are labeled illustrative. A thumbnail from an attached clip is labeled as a recorded frame.
-- The app does not dispatch a drone, ingest real model output, or modify the Supabase database.
+- The app does not dispatch a drone or modify the Supabase database. The separate local flight demo consumes actual scene-model output through an HTTP service; it does not associate video tracks with registered cattle.
 - Keep database credentials and privileged keys on the backend. Local environment files, dependencies, runtime state, test output, and generated builds are ignored by Git.
 
 ## Database

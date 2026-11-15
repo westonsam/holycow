@@ -28,6 +28,10 @@ The browser imports `lib/cattle/client.ts` and shared contracts. It does not imp
 
 ## Current API
 
+`/api/notifications/:path` is the local operator boundary for the independent notification service. It allowlists status/export reads and sample/simulator writes, validates mutation origin/content/size, and adds the server-only `HOLYCOW_NOTIFICATIONS_TOKEN` when calling `HOLYCOW_NOTIFICATIONS_URL`. Browser commands cannot ingest live alerts or choose a recipient. This console is restricted to local app URLs pending verified user/tenant authentication for a hosted dashboard. The backend separately authenticates producer requests and validates Twilio webhook signatures. See [backend guide](../../backend/README.md).
+
+The separate local flight demo uses `/api/demo-flight/*` → `server/control/demo-flight.ts` → the Python loopback HTTP service. The server-only Worker binding `HOLYCOW_DEMO_SERVICE_URL` selects the backend. The Worker never spawns Python. IDs/operations, mutation origins, content type and size are checked at the web boundary; the service validates job/review commands and commits them to its own SQLite database. Media is streamed by fixed asset ID with byte ranges. This does not change the synthetic alert receipt contract or the future Supabase repository port. See [DEMO.md](../../DEMO.md) for endpoints, lifecycle, configuration and limitations.
+
 `GET /api/overview` returns `{ data: Overview, meta: { mode: 'demo', requestId } }` with no-store caching. Transport/network failures surface an error state with retry; the UI does not silently substitute fresh fake data for a failed live response.
 
 `POST /api/alerts/:id/review` accepts:

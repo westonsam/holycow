@@ -8,6 +8,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test:control": "node --test tests/control-layer.test.mjs",
+    "test:demo": "node --test tests/demo-flight.test.mjs",
+    "test:notifications": "node --test tests/notifications.test.mjs",
     "install:ci": "node scripts/install-ci.mjs",
     "dev": "node scripts/run-framework.mjs dev",
     "build": "node scripts/run-framework.mjs build && node scripts/normalize-worker-config.mjs",

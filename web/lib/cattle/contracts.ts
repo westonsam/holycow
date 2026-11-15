@@ -4,7 +4,7 @@ export type Assessment =
   | "clear"
   | "unable"
   | "unobserved";
-export type Section = "overview" | "map" | "cattle" | "flights" | "spotlight";
+export type Section = "overview" | "map" | "cattle" | "flights" | "spotlight" | "notifications";
 export type AlertLifecycle =
   | "open"
   | "acknowledged"

@@ -1,0 +1,18 @@
+{
+  "name": "holycow-database",
+  "private": true,
+  "description": "Supabase database migrations and validation tooling for cattle monitoring",
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build:web": "npm --prefix web run build",
+    "check:web": "npm --prefix web run typecheck",
+    "test:web": "npm --prefix web run test:control",
+    "db:start": "supabase start",
+    "db:status": "supabase status",
+    "db:lint": "supabase db lint --local",
+    "db:types": "supabase gen types typescript --local --schema cattle"
+  },
+  "devDependencies": {
+    "supabase": "3.1.0"
+  }
+}

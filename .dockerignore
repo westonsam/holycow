@@ -1,0 +1,13 @@
+**/.git
+**/.env
+**/.env.*
+**/.dev.vars*
+**/.venv
+**/__pycache__
+**/state
+**/evidence
+**/node_modules
+web
+ml
+database
+supabase

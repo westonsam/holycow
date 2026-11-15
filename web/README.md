@@ -23,6 +23,10 @@ npm run build:web
 
 ## What works
 
+The **Notifications** sidebar opens a local operator console for the independent messaging backend. **Send demo to Telegram** queues a clearly labeled sample video to the configured private chat. All conversation happens in Telegram; the page shows notification delivery and durable feedback history, without an internal chat. Demo events remain synthetic and ineligible for training. See [Telegram bot setup and demo walkthrough](../backend/TELEGRAM.md) and [backend/README.md](../backend/README.md) for Docker supervision, optional OpenAI interpretation and deployment limits. Ordinary simulator ingestion remains local-only.
+
+Flight log includes a separate **Process demo flight** workflow with a local Python HTTP service, background jobs, actual saved pipeline results, timestamped video boxes and SQLite review history. Read [DEMO.md](../DEMO.md) for setup, server-side configuration, verification and the three-minute walkthrough. Existing fictional alert reviews still use their original nonpersistent receipt contract. Flight evidence uses temporary video track IDs and is never associated with the fictional registered cattle described below.
+
 - Overview: clickable alerts, herd charts, drone readings, refresh, search and data-source explanation.
 - Map: clickable cattle/pasture labels, herd/status filters, zoom, reset, drag/keyboard pan, layers and expanded view.
 - Register: search, herd/assessment filtering, sorting, pagination, row selection, CSV export, details and adding an unobserved cow.

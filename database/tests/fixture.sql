@@ -1,0 +1,95 @@
+-- SYNTHETIC ONLY. Disposable empty database; run as migration administrator.
+-- IDs are recognizable; fixture is intentionally a sparse sample of a 300-image clip.
+BEGIN;
+SET LOCAL search_path=cattle,public;
+CREATE OR REPLACE FUNCTION pg_temp.uid(n integer) RETURNS uuid LANGUAGE sql IMMUTABLE AS
+$$ SELECT ('00000000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid $$;
+INSERT INTO organization(id,name) VALUES(pg_temp.uid(1),'Example Ranch'),(pg_temp.uid(2),'Other tenant');
+SELECT set_config('app.org_id',pg_temp.uid(2)::text,true);
+INSERT INTO ranch VALUES(pg_temp.uid(2),pg_temp.uid(210),'Other ranch');
+INSERT INTO drone VALUES(pg_temp.uid(2),pg_temp.uid(230),'other-drone','Other drone');
+INSERT INTO animal(org_id,id,display_name) VALUES(pg_temp.uid(2),pg_temp.uid(220),'Other cow');
+SELECT set_config('app.org_id',pg_temp.uid(1)::text,true);
+INSERT INTO membership VALUES(pg_temp.uid(1),'https://auth.example.invalid','test-reviewer','reviewer');
+INSERT INTO ranch VALUES(pg_temp.uid(1),pg_temp.uid(10),'North ranch');
+INSERT INTO pasture VALUES(pg_temp.uid(1),pg_temp.uid(11),pg_temp.uid(10),'North pasture');
+INSERT INTO boundary_version(org_id,id,pasture_id,valid_during,geom,policy_version)
+VALUES(pg_temp.uid(1),pg_temp.uid(12),pg_temp.uid(11),'[2026-01-01,infinity)',
+ ST_Multi(ST_GeomFromText('POLYGON((-120.01 37,-120 37,-120 37.01,-120.01 37.01,-120.01 37))',4326)),'uncertainty-buffer/1');
+INSERT INTO herd VALUES(pg_temp.uid(1),pg_temp.uid(13),pg_temp.uid(10),'Herd 1');
+INSERT INTO animal(org_id,id,display_name) VALUES(pg_temp.uid(1),pg_temp.uid(20),'Cow 718'),(pg_temp.uid(1),pg_temp.uid(21),'Cow 904');
+INSERT INTO animal_identifier(org_id,animal_id,namespace,value,valid_during)
+VALUES(pg_temp.uid(1),pg_temp.uid(20),'rfid:example-ranch','EPC-SYNTHETIC-718','[2026-01-01,infinity)');
+INSERT INTO herd_membership(org_id,animal_id,herd_id,valid_during)
+SELECT pg_temp.uid(1),pg_temp.uid(n),pg_temp.uid(13),'[2026-01-01,infinity)'::tstzrange FROM generate_series(20,21) n;
+INSERT INTO drone VALUES(pg_temp.uid(1),pg_temp.uid(30),'drone-1','Drone 1');
+INSERT INTO flight(org_id,id,drone_id,ranch_id,source_key,started_at,ended_at)
+VALUES(pg_temp.uid(1),pg_temp.uid(31),pg_temp.uid(30),pg_temp.uid(10),'flight-20261114-1','2026-11-14T16:00Z','2026-11-14T16:20Z');
+INSERT INTO clip(org_id,id,flight_id,source_key,parsed_animal_id,parsed_identifier,started_at,duration_ms,fps,expected_image_count)
+VALUES(pg_temp.uid(1),pg_temp.uid(32),pg_temp.uid(31),'cow718-clip1',pg_temp.uid(20),'EPC-SYNTHETIC-718','2026-11-14T16:10Z',10000,30,300);
+INSERT INTO media_asset(org_id,id,flight_id,source_key,clip_id,image_index,kind,object_key,sha256,size_bytes,state,captured_at,width_px,height_px,sensor_key,capture_schema,capture)
+VALUES(pg_temp.uid(1),pg_temp.uid(40),pg_temp.uid(31),'image-200',pg_temp.uid(32),200,'image','org1/flight1/clip1/200.jpg',repeat('a',64),250000,'ready','2026-11-14T16:10:06.666667Z',1920,1080,'rgb-1','capture/1','{"clock_alignment":"synthetic"}'),
+ (pg_temp.uid(1),pg_temp.uid(41),pg_temp.uid(31),'image-0',pg_temp.uid(32),0,'image','org1/flight1/clip1/0.jpg',repeat('b',64),250000,'ready','2026-11-14T16:10Z',1920,1080,'rgb-1','capture/1','{}');
+-- Exact upload retry: insert returns no extra row. Production also compares immutable metadata.
+INSERT INTO media_asset SELECT * FROM media_asset WHERE id=pg_temp.uid(40)
+ON CONFLICT(org_id,flight_id,source_key) DO NOTHING;
+INSERT INTO frame(org_id,id,asset_id,flight_id,offset_ms,captured_at,clock_quality)
+VALUES(pg_temp.uid(1),pg_temp.uid(50),pg_temp.uid(40),pg_temp.uid(31),0,'2026-11-14T16:10:06.666667Z','aligned'),
+ (pg_temp.uid(1),pg_temp.uid(51),pg_temp.uid(41),pg_temp.uid(31),0,'2026-11-14T16:10Z','aligned');
+INSERT INTO model_version(org_id,id,model_name,version,artifact_sha256,taxonomy_version,score_meaning)
+VALUES(pg_temp.uid(1),pg_temp.uid(60),'synthetic-detector-and-gait','1',repeat('c',64),'demo/1','uncalibrated model confidence'),
+ (pg_temp.uid(1),pg_temp.uid(61),'synthetic-detector-and-gait','2',repeat('d',64),'demo/1','uncalibrated model confidence');
+INSERT INTO inference_run(org_id,id,flight_id,model_version_id,request_key,config_schema,config,processing_version)
+VALUES(pg_temp.uid(1),pg_temp.uid(70),pg_temp.uid(31),pg_temp.uid(60),'run-a','config/1','{"threshold":0.5}','pipeline/1'),
+ (pg_temp.uid(1),pg_temp.uid(71),pg_temp.uid(31),pg_temp.uid(61),'run-b-intentional-rerun','config/1','{"threshold":0.5}','pipeline/1');
+INSERT INTO run_input SELECT pg_temp.uid(1),pg_temp.uid(r),pg_temp.uid(f),pg_temp.uid(31)
+FROM generate_series(70,71) r CROSS JOIN generate_series(50,51) f;
+UPDATE inference_run SET status='running',started_at='2026-11-14T17:00Z';
+INSERT INTO model_output(org_id,id,run_id,frame_id,flight_id,source_key,kind,schema_version,payload,score)
+VALUES(pg_temp.uid(1),pg_temp.uid(80),pg_temp.uid(70),pg_temp.uid(50),pg_temp.uid(31),'det-1','detection','detection/1','{"class":"cattle"}',0.9),
+ (pg_temp.uid(1),pg_temp.uid(81),pg_temp.uid(70),pg_temp.uid(51),pg_temp.uid(31),'det-old','detection','detection/1','{"class":"cattle"}',0.8),
+ (pg_temp.uid(1),pg_temp.uid(82),pg_temp.uid(70),pg_temp.uid(50),pg_temp.uid(31),'det-anon','detection','detection/1','{"class":"cattle"}',0.7),
+ (pg_temp.uid(1),pg_temp.uid(83),pg_temp.uid(70),pg_temp.uid(50),pg_temp.uid(31),'gait-1','measurement','measurement/1','{"metric":"gait_locomotion","demo_only":true}',0.8),
+ (pg_temp.uid(1),pg_temp.uid(84),pg_temp.uid(71),pg_temp.uid(50),pg_temp.uid(31),'gait-1','measurement','measurement/1','{"metric":"gait_locomotion","demo_only":true}',0.9);
+INSERT INTO model_measurement(org_id,output_id,metric_code,value,unit,scale_version,scale_min,scale_max)
+VALUES(pg_temp.uid(1),pg_temp.uid(83),'gait_locomotion',4,'ordinal_score','synthetic-1-to-5/1',1,5),
+ (pg_temp.uid(1),pg_temp.uid(84),'gait_locomotion',1,'ordinal_score','synthetic-1-to-5/1',1,5);
+INSERT INTO output_input VALUES(pg_temp.uid(1),pg_temp.uid(83),pg_temp.uid(80)),(pg_temp.uid(1),pg_temp.uid(84),pg_temp.uid(80));
+INSERT INTO detection(org_id,id,output_id,run_id,frame_id,class_label,x_min,y_min,x_max,y_max)
+VALUES(pg_temp.uid(1),pg_temp.uid(90),pg_temp.uid(80),pg_temp.uid(70),pg_temp.uid(50),'cattle',0.1,0.2,0.3,0.5),
+ (pg_temp.uid(1),pg_temp.uid(91),pg_temp.uid(81),pg_temp.uid(70),pg_temp.uid(51),'cattle',0.1,0.2,0.3,0.5),
+ (pg_temp.uid(1),pg_temp.uid(92),pg_temp.uid(82),pg_temp.uid(70),pg_temp.uid(50),'cattle',0.6,0.2,0.8,0.5);
+INSERT INTO track(org_id,id,run_id,flight_id,local_key)
+VALUES(pg_temp.uid(1),pg_temp.uid(100),pg_temp.uid(70),pg_temp.uid(31),'track-1'),
+ (pg_temp.uid(1),pg_temp.uid(101),pg_temp.uid(70),pg_temp.uid(31),'track-anonymous');
+INSERT INTO track_detection VALUES(pg_temp.uid(1),pg_temp.uid(100),pg_temp.uid(90),pg_temp.uid(70)),
+ (pg_temp.uid(1),pg_temp.uid(100),pg_temp.uid(91),pg_temp.uid(70)),
+ (pg_temp.uid(1),pg_temp.uid(101),pg_temp.uid(92),pg_temp.uid(70));
+UPDATE inference_run SET status='succeeded',ended_at='2026-11-14T17:01Z';
+INSERT INTO identity_decision(org_id,id,track_id,animal_id,decision,method_version,actor,reason,decided_at)
+VALUES(pg_temp.uid(1),pg_temp.uid(110),pg_temp.uid(100),pg_temp.uid(20),'accepted','rfid-alignment-demo/1','reviewer:demo','Initial alignment claim','2026-11-14T17:02Z');
+INSERT INTO identity_evidence VALUES(pg_temp.uid(1),pg_temp.uid(110),pg_temp.uid(80));
+INSERT INTO location_observation(org_id,id,track_id,flight_id,output_id,event_at,position,uncertainty_m,assessment,method_version,actor,reason)
+VALUES(pg_temp.uid(1),pg_temp.uid(120),pg_temp.uid(100),pg_temp.uid(31),pg_temp.uid(80),'2026-11-14T16:10:06.666667Z',ST_SetSRID(ST_Point(-120.005,37.005),4326)::geography,5,'accepted','provided-ground/1','resolver/1','Synthetic mapped ground point'),
+ (pg_temp.uid(1),pg_temp.uid(121),pg_temp.uid(101),pg_temp.uid(31),pg_temp.uid(82),'2026-11-14T16:10:06.666667Z',NULL,NULL,'not_assessable','provided-ground/1','resolver/1','No ground position');
+-- Delayed older event deliberately inserted AFTER newer position.
+INSERT INTO location_observation(org_id,id,track_id,flight_id,output_id,event_at,position,uncertainty_m,assessment,method_version,actor,reason)
+VALUES(pg_temp.uid(1),pg_temp.uid(122),pg_temp.uid(100),pg_temp.uid(31),pg_temp.uid(81),'2026-11-14T16:10Z',ST_SetSRID(ST_Point(-120.006,37.005),4326)::geography,8,'accepted','provided-ground/1','resolver/1','Late upload');
+INSERT INTO finding(org_id,id,track_id,event_at,label,severity,assessment,policy_version,actor)
+VALUES(pg_temp.uid(1),pg_temp.uid(130),pg_temp.uid(100),'2026-11-14T16:10:06.666667Z','gait_locomotion_review','priority','suspected','demo-triage/1','resolver/1');
+INSERT INTO finding_evidence VALUES(pg_temp.uid(1),pg_temp.uid(130),pg_temp.uid(83)),(pg_temp.uid(1),pg_temp.uid(130),pg_temp.uid(84));
+INSERT INTO alert_rule_version VALUES(pg_temp.uid(1),pg_temp.uid(140),'gait-review','demo/1','{"demo_only":true,"diagnosis":false}');
+INSERT INTO alert(org_id,id,rule_version_id,finding_id,dedupe_key)
+VALUES(pg_temp.uid(1),pg_temp.uid(141),pg_temp.uid(140),pg_temp.uid(130),'gait:130:demo1');
+INSERT INTO alert_event(org_id,id,alert_id,state,actor,reason)
+VALUES(pg_temp.uid(1),pg_temp.uid(142),pg_temp.uid(141),'open','resolver/1','Needs review');
+INSERT INTO finding_review(org_id,id,finding_id,decision,actor,reason)
+VALUES(pg_temp.uid(1),pg_temp.uid(143),pg_temp.uid(130),'rejected','reviewer:demo','Occlusion; suspected issue rejected, not a veterinary assessment');
+INSERT INTO survey(org_id,id,herd_id,flight_id,event_at,estimate,lower_count,upper_count,method_version,uncertainty_note,actor,recorded_at)
+VALUES(pg_temp.uid(1),pg_temp.uid(150),pg_temp.uid(13),pg_temp.uid(31),'2026-11-14T16:10Z',2,1,3,'track-dedupe-demo/1','Incomplete area and unresolved animal; not herd census','resolver/1','2026-11-14T17:03Z');
+INSERT INTO survey_input VALUES(pg_temp.uid(1),pg_temp.uid(150),pg_temp.uid(70));
+-- Identity correction reassigns the ENTIRE temporary track, retaining the wrong decision.
+INSERT INTO identity_decision(org_id,id,track_id,animal_id,supersedes,decision,method_version,actor,reason,decided_at)
+VALUES(pg_temp.uid(1),pg_temp.uid(111),pg_temp.uid(100),pg_temp.uid(21),pg_temp.uid(110),'accepted','manual-rfid-reconcile/1','reviewer:demo','RFID/clip alignment corrected','2026-11-14T17:04Z');
+INSERT INTO identity_evidence VALUES(pg_temp.uid(1),pg_temp.uid(111),pg_temp.uid(80));
+COMMIT;

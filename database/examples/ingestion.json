@@ -1,0 +1,53 @@
+{
+  "notice": "Synthetic transport examples, not a claim about model accuracy or final score scales. Adapter resolves source keys to tenant-scoped UUIDs. Do not persist credentials or signed URLs.",
+  "clip_upload": {
+    "schema_version": "clip/1", "flight_source_key": "flight-20261114-1",
+    "clip_source_key": "cow718-clip1", "parsed_identifier": "EPC-SYNTHETIC-718",
+    "identity_claim_method": "parser-cow-id", "identity_claim_is_verified": false,
+    "started_at": "2026-11-14T16:10:00Z", "duration_ms": 10000, "fps": 30,
+    "expected_image_count": 300,
+    "image_example": {"source_key": "image-200", "image_index": 200,
+      "captured_at": "2026-11-14T16:10:06.666667Z", "width_px": 1920, "height_px": 1080,
+      "sensor_key": "rgb-1", "object_key": "org1/flight1/clip1/200.jpg",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size_bytes": 250000}
+  },
+  "run": {
+    "request_key": "flight1-gait-v1-attempt1", "model_name": "synthetic-gait-model", "version": "1",
+    "artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "taxonomy_version": "synthetic/1", "score_meaning": "uncalibrated model confidence",
+    "calibration_version": null, "processing_version": "pipeline/1", "retry_of": null,
+    "config_schema": "config/1", "config": {"threshold_policy": "demo-only"},
+    "input_scope": {"clip_source_key": "cow718-clip1", "frame_source_keys": ["image-200"]}
+  },
+  "outputs": [
+    {"source_key": "det-200-1", "frame_source_key": "image-200", "kind": "detection", "schema_version": "detection/1", "score": 0.9,
+      "payload": {"class_label": "cattle", "bbox_convention": "normalized_xyxy_top_left_half_open",
+        "bbox": [0.1, 0.2, 0.3, 0.5], "mask_object_key": null, "temporary_track_key": "track-1"}},
+    {"source_key": "rfid-claim-1", "frame_source_key": "image-200", "kind": "identity", "schema_version": "identity/1", "score": null,
+      "payload": {"candidate_namespace": "rfid:example-ranch", "candidate_value": "EPC-SYNTHETIC-718",
+        "method_version": "rfid-clip-time-alignment/1", "reader_source_key": "example-reader",
+        "reader_event_at": "2026-11-14T16:10:00Z", "alignment_uncertainty_ms": null,
+        "supporting_outputs": ["det-200-1"], "acceptance": "requires_alignment_validation"}},
+    {"source_key": "ground-200-1", "frame_source_key": "image-200", "kind": "location", "schema_version": "ground-location/1", "score": null,
+      "payload": {"track_key": "track-1", "crs": "EPSG:4326", "axis_order": "longitude_latitude",
+        "coordinates": [-120.005, 37.005], "uncertainty_m": 5, "method_version": "provided-ground/1",
+        "uncertainty_meaning": "synthetic conservative horizontal radius, replace with actual method specification",
+        "drone_position_is_separate": true}},
+    {"source_key": "gait-200-1", "frame_source_key": "image-200", "kind": "measurement", "schema_version": "measurement/1", "score": 0.8,
+      "payload": {"metric_code": "gait_locomotion", "value": 4, "unit": "ordinal_score", "scale_version": "SYNTHETIC-1-to-5/1",
+        "scale_min": 1, "scale_max": 5, "direction": "higher_requires_more_review", "supporting_outputs": ["det-200-1"],
+        "window_start": "2026-11-14T16:10:00Z", "window_end": "2026-11-14T16:10:10Z", "diagnosis": false}},
+    {"source_key": "heat-clip1", "frame_source_key": "image-200", "kind": "measurement", "schema_version": "measurement/1", "score": 0.6,
+      "payload": {"metric_code": "estrus_behavior", "value": 72, "unit": "model_score", "scale_version": "SYNTHETIC-0-to-100/1",
+        "scale_min": 0, "scale_max": 100, "direction": "higher_more_behavioral_evidence", "supporting_outputs": ["det-200-1"],
+        "window_start": "2026-11-14T16:10:00Z", "window_end": "2026-11-14T16:10:10Z",
+        "meaning": "behavioral heat score; neither a temperature nor confirmed estrus"}},
+    {"source_key": "not-assessable-clip1", "frame_source_key": "image-200", "kind": "finding", "schema_version": "assessment/1", "score": null,
+      "payload": {"metric_code": "gait_locomotion", "assessment": "not_assessable", "reason": "occlusion",
+        "supporting_outputs": ["det-200-1"], "value": null}},
+    {"source_key": "survey-flight1", "frame_source_key": "image-200", "kind": "survey", "schema_version": "survey/1", "score": null,
+      "payload": {"estimate": 2, "lower_count": 1, "upper_count": 3, "coverage_fraction": null,
+        "method_version": "track-dedupe-SYNTHETIC/1", "uncertainty_note": "not a full herd census; occlusion and unresolved identities",
+        "source_run_keys": ["flight1-gait-v1-attempt1"], "unique_animals_not_detection_rows": true}}
+  ]
+}
