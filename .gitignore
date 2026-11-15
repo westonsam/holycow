@@ -438,3 +438,7 @@ backend/tools/*.exe
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Downloaded ML data and local training artifacts
+/ml/data/
+/ml/runs/

@@ -122,7 +122,7 @@ def main():
     p.add_argument('source', type=Path)
     p.add_argument('--output', type=Path, default=ROOT/'outputs'/'cows-boxed.mp4')
     p.add_argument('--confidence', type=float, default=.55)
-    p.add_argument('--model-dir', type=Path, default=ROOT/'weights'/'scene-cattle')
+    p.add_argument('--model-dir', type=Path, default=ROOT/'scene-cattle')
     p.add_argument('--stride', type=int, default=1, help='Run model every N frames; optical flow between frames')
     p.add_argument('--output-width', type=int, default=1920, help='0 preserves input dimensions')
     p.add_argument('--masks', action='store_true', help='Also show instance masks')

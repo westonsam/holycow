@@ -93,7 +93,7 @@ def train(source, destination):
 
 class SceneSegmenter:
     def __init__(self, model_dir=None, threshold=.55, min_area=300):
-        self.model_dir=Path(model_dir or ROOT/'weights'/'scene-cattle')
+        self.model_dir=Path(model_dir or ROOT/'scene-cattle')
         self.lut=np.load(self.model_dir/'cattle-color-lut.npy')
         self.threshold=threshold
         self.min_area=min_area
@@ -194,6 +194,6 @@ class SceneSegmenter:
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('source',type=Path)
-    p.add_argument('--model-dir',type=Path,default=ROOT/'weights'/'scene-cattle')
+    p.add_argument('--model-dir',type=Path,default=ROOT/'scene-cattle')
     a=p.parse_args()
     train(a.source,a.model_dir)

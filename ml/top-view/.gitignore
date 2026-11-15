@@ -1,0 +1,10 @@
+models/
+outputs/
+__pycache__/
+.venv/
+demo-state/
+demo-assets/*.mp4
+motion-demo-state/
+motion-demo-assets/*.mp4
+motion-demo-assets/*.mov
+work/
