@@ -5,6 +5,47 @@ Telegram is HolyCow's preferred live messaging transport. It calls the official
 Codex connector are not required. The existing durable outbox, feedback assistant,
 SQLite history, evidence registry and background worker remain in use.
 
+## Demo: ask about a cow after an alert
+
+The first alert and video are unchanged. In the configured Telegram chat, send:
+
+```text
+Cowboy: What's cow 718's score and location?
+HolyCow: Cow 718
+Gait / locomotion score: 4 / 5.
+Last seen: North pasture (Herd 1), Nov 14, 2026 at 8:42 AM UTC-08:00.
+Demo observations, not live GPS or a diagnosis.
+
+Cowboy: What about cow 904?
+HolyCow: Cow 904
+Estrus behavior score: 72 / 100.
+Last seen: South pasture (Herd 2), Nov 14, 2026 at 7:58 AM UTC-08:00.
+Demo observations, not live GPS or a diagnosis.
+```
+
+Follow-ups such as "where is she?" or "and her score?" remember the last queried
+cow for 30 minutes, including across restarts. Replying to the original alert
+with "what's her score?" uses that alert's cow. The bot asks for a cow number
+when needed. Cow 632 is absent from the dataset; it suggests known examples
+rather than inventing an observation. Cow 652 has no assessed gait score, and
+unobserved cattle have no last-seen location.
+
+Lookups use the checked-in `backend/data/demo-herd.json` export of the public
+dashboard dataset, including the observation time and pasture. They work without
+an OpenAI key and do not create feedback labels, alter cattle or send alerts.
+They do not query a live ranch database or use browser-local demo edits.
+Refresh the export after changing/publishing the dashboard dataset:
+
+```powershell
+backend/.venv/Scripts/python.exe -m backend.refresh_demo_herd
+```
+
+After updating backend code, stop **Start Demo Backend** with Ctrl+C and launch
+it again. If it says it is reusing an existing notification worker, stop that
+older worker too before relaunching so the updated conversation code is loaded.
+The configured Telegram recipient allowlist, deduplication, STOP/START controls
+and alert-feedback confirmation flow still apply.
+
 ## Connect a bot
 
 1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and

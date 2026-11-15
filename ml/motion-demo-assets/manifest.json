@@ -1,0 +1,13 @@
+{
+  "assetId": "scene-flight",
+  "name": "Cow motion demo",
+  "sourceName": "source.mov",
+  "sourceSha256": "662714ad6bebb2df730a14df87617199d02eb9010c5282a67c8b13a5f93e4f71",
+  "playbackSha256": "f159c2b13fe64acb769fe55f9e040d8977bb51caa706d6cba776517bc94d6a95",
+  "fps": 10.0,
+  "width": 1280,
+  "height": 720,
+  "duration": 10.1,
+  "pipeline": "YOLO11 segmentation + APT-36K ViTPose",
+  "illustrativeScores": true
+}

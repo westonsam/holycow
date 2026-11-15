@@ -57,8 +57,9 @@ class TelegramClient:
         with store.connect() as db:
             incoming = db.execute("SELECT provider_sid FROM messages WHERE recipient=? AND alert=? AND direction='incoming' ORDER BY created DESC,rowid DESC LIMIT 1", (message['recipient'], message['alert'])).fetchone()
         namespace = self.settings.telegram_token.split(':')[0]
-        if message['kind'] == 'agent' and incoming and incoming[0].startswith(f'tg:{namespace}:{self.settings.telegram_chat_id}:'):
-            payload['reply_parameters'] = {'message_id': int(incoming[0].split(':')[-1])}
+        reply_sid = message.get('reply_sid') or (incoming[0] if incoming else None)
+        if message['kind'] == 'agent' and reply_sid and reply_sid.startswith(f'tg:{namespace}:{self.settings.telegram_chat_id}:'):
+            payload['reply_parameters'] = {'message_id': int(reply_sid.split(':')[-1])}
         evidence_id = None
         if message['kind'] == 'alert' and message['alert']:
             event = store.alert(message['alert'])

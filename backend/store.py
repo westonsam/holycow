@@ -59,10 +59,16 @@ class Store:
                     expires REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS telegram_offsets(
                     bot_id TEXT PRIMARY KEY, next_update INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS cow_lookup_context(
+                    sender TEXT PRIMARY KEY, cow TEXT NOT NULL, expires REAL NOT NULL);
             ''')
             # Additive migration: preserve old messages and their original text.
             if 'reply_to' not in {r[1] for r in db.execute('PRAGMA table_info(inbox)')}:
                 db.execute('ALTER TABLE inbox ADD COLUMN reply_to TEXT')
+            if 'reply_explicit' not in {r[1] for r in db.execute('PRAGMA table_info(inbox)')}:
+                db.execute('ALTER TABLE inbox ADD COLUMN reply_explicit INTEGER NOT NULL DEFAULT 0')
+            if 'reply_sid' not in {r[1] for r in db.execute('PRAGMA table_info(messages)')}:
+                db.execute('ALTER TABLE messages ADD COLUMN reply_sid TEXT')
             if 'sent_at' not in {r[1] for r in db.execute('PRAGMA table_info(messages)')}:
                 db.execute('ALTER TABLE messages ADD COLUMN sent_at REAL')
             # A provider might already have accepted these. Never blindly resend.
@@ -115,11 +121,11 @@ class Store:
         with self.connect() as db:
             db.execute("INSERT OR REPLACE INTO runtime VALUES ('telegram_heartbeat',?)", (time.time(),))
 
-    def outgoing(self, db, alert_id, recipient, body, kind='agent', transport=None, state='queued'):
+    def outgoing(self, db, alert_id, recipient, body, kind='agent', transport=None, state='queued', reply_sid=None):
         message_id = uid()
-        db.execute('''INSERT INTO messages(id,alert,direction,kind,body,recipient,transport,state,next_attempt,created)
-                      VALUES (?,?,'outgoing',?,?,?,?,?,?,?)''',
-                   (message_id, alert_id, kind, body, recipient, transport or self.settings.transport, state, time.time(), time.time()))
+        db.execute('''INSERT INTO messages(id,alert,direction,kind,body,recipient,transport,state,next_attempt,created,reply_sid)
+                      VALUES (?,?,'outgoing',?,?,?,?,?,?,?,?)''',
+                   (message_id, alert_id, kind, body, recipient, transport or self.settings.transport, state, time.time(), time.time(), reply_sid))
         return message_id
 
     def ingest(self, event, *, telegram_demo=False):
@@ -204,6 +210,7 @@ class Store:
         return {'health': self.health(), 'alerts': [self.alert(i) for i in ids], 'messages': messages}
 
     def receive(self, sid, sender, body, reply_to=None):
+        reply_explicit = bool(reply_to)
         if sender not in (self.settings.notification_recipient, 'simulated-rancher'):
             raise PermissionError('Unknown sender')
         if not 1 <= len(body.strip()) <= 1600:
@@ -217,7 +224,7 @@ class Store:
                 return {'received': True, 'duplicate': True}
             reply_alert = None
             if reply_to:
-                target = db.execute("SELECT alert FROM messages WHERE id=? AND recipient=? AND direction='outgoing' AND alert IS NOT NULL", (reply_to, sender)).fetchone()
+                target = db.execute("SELECT alert FROM messages WHERE id=? AND recipient=? AND direction='outgoing'", (reply_to, sender)).fetchone()
                 if not target:
                     raise ValueError('Reply context is not a message in this conversation')
                 reply_alert = target['alert']
@@ -229,7 +236,7 @@ class Store:
                     AND sent_at>? ORDER BY sent_at DESC,rowid DESC LIMIT 1""", (sender, time.time()-1800)).fetchone()
                 reply_to = previous['id'] if previous else None
                 reply_alert = previous['alert'] if previous else None
-            db.execute('INSERT INTO inbox(sid,sender,body,created,reply_to) VALUES (?,?,?,?,?)', (sid, sender, body, time.time(), reply_to))
+            db.execute('INSERT INTO inbox(sid,sender,body,created,reply_to,reply_explicit) VALUES (?,?,?,?,?,?)', (sid, sender, body, time.time(), reply_to, int(reply_explicit)))
             db.execute('''INSERT INTO messages(id,alert,direction,kind,body,recipient,transport,state,provider_sid,next_attempt,created)
                           VALUES (?,?,'incoming','feedback',?,?,?,'received',?,?,?)''',
                        (uid(), reply_alert, body, sender, self.sender_transport(sender), sid, time.time(), time.time()))
@@ -248,6 +255,24 @@ class Store:
         control = body.upper()
         if control.startswith('/'):
             control = control.split()[0].split('@')[0][1:]
+        controls = ('STOP', 'STOPALL', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT', 'START')
+        if control not in controls:
+            from .cow_lookup import answer
+            with self.connect() as db:
+                lookup_context = db.execute('SELECT cow FROM cow_lookup_context WHERE sender=? AND expires>?', (sender, time.time())).fetchone()
+                quoted = db.execute('SELECT alert FROM messages WHERE id=? AND recipient=?', (incoming.get('reply_to'), sender)).fetchone()
+                quoted_alert = db.execute('SELECT payload FROM alerts WHERE id=? AND recipient=?', (quoted['alert'], sender)).fetchone() if quoted and quoted['alert'] else None
+            context_cow = lookup_context['cow'] if lookup_context else None
+            if incoming.get('reply_explicit') and quoted_alert:
+                context_cow = None
+            response = answer(body, context_cow,
+                              json.loads(quoted_alert['payload'])['cowNumber'] if quoted_alert else None)
+            if response:
+                reply, cow = response
+                return self.finish_inbox(incoming, None, reply, lookup_cow=cow)
+            if incoming.get('reply_explicit') and quoted and not quoted['alert']:
+                return self.finish_inbox(incoming, None,
+                    'Ask me for another cow\'s score or location. To review an alert, reply directly to its video or feedback question.')
         # Untrusted text never gets database, network, model-training or sending tools.
         refs = list(dict.fromkeys(re.findall(r'\bHC-[A-F0-9]{8}\b', body.upper())))
         with self.connect() as db:
@@ -298,6 +323,7 @@ class Store:
                     db.execute('DELETE FROM pending WHERE sender=?', (sender,))
                     db.execute('DELETE FROM conversation WHERE sender=?', (sender,))
                     db.execute('DELETE FROM routing WHERE sender=?', (sender,))
+                    db.execute('DELETE FROM cow_lookup_context WHERE sender=?', (sender,))
                 db.execute("UPDATE inbox SET state='done' WHERE sid=?", (sid,))
                 # Twilio handles STOP/START acknowledgments itself; no duplicate opt-out reply.
                 if sender == 'simulated-rancher':
@@ -372,12 +398,15 @@ class Store:
             self.outgoing(db, row['id'], sender, reply, transport=self.sender_transport(sender))
             db.execute("UPDATE inbox SET state='done' WHERE sid=?", (sid,))
 
-    def finish_inbox(self, incoming, alert_id, reply):
+    def finish_inbox(self, incoming, alert_id, reply, lookup_cow=None):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             if db.execute('SELECT state FROM inbox WHERE sid=?', (incoming['sid'],)).fetchone()[0] == 'done':
                 return
-            self.outgoing(db, alert_id, incoming['sender'], reply, transport=self.sender_transport(incoming['sender']))
+            if lookup_cow is not None:
+                db.execute('INSERT OR REPLACE INTO cow_lookup_context VALUES (?,?,?)', (incoming['sender'], lookup_cow, time.time()+1800))
+                db.execute("UPDATE messages SET alert=NULL,kind='lookup' WHERE provider_sid=? AND direction='incoming'", (incoming['sid'],))
+            self.outgoing(db, alert_id, incoming['sender'], reply, transport=self.sender_transport(incoming['sender']), reply_sid=incoming['sid'])
             db.execute("UPDATE inbox SET state='done' WHERE sid=?", (incoming['sid'],))
 
     def claim_message(self):

@@ -1,0 +1,817 @@
+{
+  "mode": "demo",
+  "source": "https://holycow-herd-monitor.freebream261.chatgpt.site/api/overview",
+  "snapshotAt": "2026-11-14T08:42:00-08:00",
+  "animals": [
+    {
+      "tag": "718",
+      "metric": "Gait / locomotion",
+      "metricValue": "4 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "priority",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "301",
+      "metric": "Gait / locomotion",
+      "metricValue": "4 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "priority",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "302",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "303",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "304",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "305",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "652",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": "2026-11-14T07:21:00-08:00",
+      "assessment": "unable",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "307",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "308",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "309",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "310",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "311",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "312",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "313",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "314",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "315",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "316",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "317",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "318",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "319",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "320",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "321",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "322",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "323",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "324",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "325",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "326",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "327",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "328",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "329",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "330",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "331",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "332",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "333",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "334",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "335",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "336",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "337",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "338",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "339",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "340",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "341",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "342",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "343",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "344",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 1",
+      "pasture": "North pasture"
+    },
+    {
+      "tag": "826",
+      "metric": "Gait / locomotion",
+      "metricValue": "4 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "priority",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "904",
+      "metric": "Estrus behavior",
+      "metricValue": "72 / 100",
+      "observedAt": "2026-11-14T07:58:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "347",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "348",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "349",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "350",
+      "metric": "Gait / locomotion",
+      "metricValue": "3 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "review",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "351",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "352",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "353",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "354",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "355",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "356",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "357",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "358",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "359",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "360",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "361",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "362",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "363",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "364",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "365",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "366",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "367",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "368",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "369",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "370",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "371",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "372",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "373",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "374",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "375",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "376",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "377",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "378",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "379",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "380",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "381",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "382",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "383",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "384",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "385",
+      "metric": "Gait / locomotion",
+      "metricValue": "1 / 5",
+      "observedAt": "2026-11-14T08:42:00-08:00",
+      "assessment": "clear",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "386",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "387",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "388",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    },
+    {
+      "tag": "389",
+      "metric": "Gait / locomotion",
+      "metricValue": "Not assessed",
+      "observedAt": null,
+      "assessment": "unobserved",
+      "herd": "Herd 2",
+      "pasture": "South pasture"
+    }
+  ]
+}

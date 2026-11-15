@@ -27,12 +27,17 @@ test('prepared evidence, HTTP seeking and durable review through Worker', async 
     job = (await (await fetch(`${root}/jobs/${job.id}`)).json()).data;
   }
   assert.equal(job.state, 'completed');
-  assert.equal(job.result.frames.length, 818);
+  assert.equal(job.result.frames.length, Math.round(job.result.duration * job.result.fps));
+  assert.ok(job.result.frames.length > 0);
+  assert.equal(job.result.illustrativeScores, true);
+  assert.match(job.result.pipeline, /YOLO11/);
   assert.equal((await (await fetch(`${root}/jobs`, post(command))).json()).data.id, job.id);
   response = await fetch(`${root}/assets/scene-video`, {headers:{Range:'bytes=100-199'}});
   assert.equal(response.status, 206);
   assert.equal((await response.arrayBuffer()).byteLength, 100);
-  const review = {detectionId:job.result.frames[400].detections[0].id, action:'flag', note:'HTTP integration test observation', expectedSeq:0};
+  const detection = job.result.frames.flatMap(frame => frame.detections)[0];
+  assert.equal(detection.keypoints.length, 17);
+  const review = {detectionId:detection.id, action:'flag', note:'HTTP integration test observation', expectedSeq:0};
   assert.equal((await fetch(`${root}/jobs/${job.id}/reviews`, post({...review, note:''}))).status, 400);
   job = (await (await fetch(`${root}/jobs/${job.id}/reviews`, post(review))).json()).data;
   assert.equal(job.reviews[0].note, review.note);

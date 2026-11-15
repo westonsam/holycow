@@ -31,7 +31,7 @@ it accepts the configured service credential, avoiding a second Telegram poller.
 
 ## Turn the backend off
 
-Press **Ctrl+C** in the launcher window. It unregisters the tunnel and stops its
+Press **Ctrl+C** in the launcher window, or use **Stop Demo Backend.cmd**. It unregisters the tunnel and stops its
 services it started, including child inference jobs. A reused notification worker
 continues running locally but is disconnected from the public dashboard.
 If the laptop loses power or connectivity,
@@ -41,8 +41,9 @@ backend requests show an offline message. Completed reviews stay in the laptop S
 ## Troubleshooting
 
 Logs: `backend/state/laptop-notifications.log`, `laptop-flight.log`, and
-`laptop-tunnel.log`. Original footage location and the private connection key
-are in ignored `backend/.env.laptop.json`. Do not share or commit that file.
+`laptop-tunnel.log`. The private connection key is in ignored
+`backend/.env.laptop.json`. Do not share or commit that file.
+The motion input is prepared at `ml/motion-demo-assets/playback.mp4`; see DEMO.md.
 The matching connection key is stored as a secret in the hosted Site.
 
 Quick Tunnels are temporary demo infrastructure and have no uptime guarantee.

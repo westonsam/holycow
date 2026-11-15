@@ -10,7 +10,7 @@ export async function demoFlight(request: Request, path: string[]) {
     const route = path.join("/");
     const read = request.method === "GET";
     const allowed = read
-      ? /^(jobs|jobs\/[a-f0-9]{32}|assets\/scene-video)$/.test(route)
+      ? /^(jobs|jobs\/[a-f0-9]{32}|assets\/(scene-video|reference-video))$/.test(route)
       : /^(jobs|jobs\/[a-f0-9]{32}\/reviews|reset)$/.test(route);
     if (!allowed) throw new ControlError("INVALID_DEMO_PATH", "Unknown demo operation or invalid ID.", 400);
     let body: string | undefined;

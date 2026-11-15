@@ -141,8 +141,8 @@ def create_app(settings=None, start_worker=True):
             raise HTTPException(409, 'Demo video unavailable. Prepare it with python -m backend.prepare_demo_video')
         event = AlertInput(eventId='telegram-demo:'+command.requestId, source='simulation', severity='high',
                            cowNumber='718', identityBasis='synthetic',
-                           location='Demo pasture, Netherlands (illustrative)', locationBasis='synthetic',
-                           summary='DEMO ONLY: Movement flagged for review; fictional cow tag, sample footage.',
+                           location='Demo pasture, Netherlands', locationBasis='synthetic',
+                           summary='DEMO ONLY: Movement flagged for review.',
                            observedAt=datetime.now(timezone.utc).isoformat(), modelVersion='synthetic-telegram-demo-v1', evidenceId='demo-scene')
         return {'data': store.ingest(event, telegram_demo=True)}
 

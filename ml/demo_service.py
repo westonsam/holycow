@@ -15,7 +15,7 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = Path(__file__).resolve().parent
-ASSETS = ROOT / 'demo-assets'
+ASSETS = ROOT / 'motion-demo-assets'
 ID = re.compile(r'^[a-f0-9]{32}$')
 
 
@@ -23,23 +23,6 @@ class Problem(Exception):
     def __init__(self, message, status=400):
         self.status = status
         super().__init__(message)
-
-
-def load_results(path, metadata):
-    meta = json.loads(metadata.read_text())
-    if not meta['complete']:
-        raise ValueError('Incomplete pipeline output')
-    frames = []
-    for line in path.read_text().splitlines():
-        row = json.loads(line)
-        frames.append({'frame': row['frame'], 'time': row['time_seconds'],
-                       'detections': [{'id': f"{row['frame']}-{d['track_id']}",
-                                       'track': d['track_id'], 'box': d['box']}
-                                      for d in row['detections']]})
-    return {'width': meta['source_width'], 'height': meta['source_height'],
-            'fps': meta['fps'], 'duration': meta['frames_processed']/meta['fps'],
-            'trackCount': len({d['track'] for f in frames for d in f['detections']}),
-            'frames': frames}
 
 
 class Store:
@@ -119,6 +102,12 @@ class Store:
             self.update(job_id, state='running')
             if mode == 'precomputed':
                 result = json.loads((ASSETS / 'prepared.json').read_text())
+                manifest = json.loads((ASSETS / 'manifest.json').read_text())
+                if result['provenance']['sourceSha256'] != manifest['playbackSha256']:
+                    raise ValueError('Saved predictions do not match the motion demo playback')
+                with (ASSETS / 'playback.mp4').open('rb') as playback:
+                    if hashlib.file_digest(playback, 'sha256').hexdigest() != manifest['playbackSha256']:
+                        raise ValueError('Playback changed; prepare matching predictions before reviewing it')
             else:
                 result = self.runner(job_id)
             self.update(job_id, state='completed', progress=1, result=json.dumps(result))
@@ -128,13 +117,13 @@ class Store:
             traceback.print_exc()
 
     def infer(self, job_id):
-        source = Path(os.environ.get('HOLYCOW_DEMO_SOURCE', ASSETS / 'source.mp4'))
-        prepared = json.loads((ASSETS / 'prepared.json').read_text())
+        source = Path(os.environ.get('HOLYCOW_DEMO_SOURCE', ASSETS / 'playback.mp4'))
+        manifest = json.loads((ASSETS / 'manifest.json').read_text())
         with source.open('rb') as stream:
-            if hashlib.file_digest(stream, 'sha256').hexdigest() != prepared['provenance']['sourceSha256']:
-                raise ValueError('Only the original prepared scene is supported')
-        output = self.directory / f'{job_id}.mp4'
-        command = [sys.executable, '-u', str(ROOT / 'cow_segment.py'), str(source), '--output', str(output)]
+            if hashlib.file_digest(stream, 'sha256').hexdigest() != manifest['playbackSha256']:
+                raise ValueError('Video does not match the prepared motion asset')
+        output = self.directory / f'{job_id}.json'
+        command = [sys.executable, '-u', str(ROOT / 'motion_pipeline.py'), str(source), '--output', str(output)]
         with (self.directory / f'{job_id}.log').open('w') as log:
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=log, text=True)
             for line in process.stdout:
@@ -145,7 +134,7 @@ class Store:
                     self.update(job_id, progress=min(.999, int(match[1])/int(match[2])))
             if process.wait() != 0:
                 raise RuntimeError('Pipeline failed')
-        return load_results(output.with_suffix('.jsonl'), output.with_suffix('.metadata.json'))
+        return json.loads(output.read_text(encoding='utf-8'))
 
     def review(self, job_id, body):
         with self.lock:
@@ -199,8 +188,8 @@ def handler(store):
                 if self.headers.get('Origin'):
                     raise Problem('Use the web control layer', 403)
                 path = self.path
-                if self.command == 'GET' and path == '/assets/scene-video':
-                    return self.video()
+                if self.command == 'GET' and path in ('/assets/scene-video', '/assets/reference-video'):
+                    return self.video(reference=path.endswith('reference-video'))
                 body = None
                 if self.command == 'POST':
                     if 'application/json' not in self.headers.get('Content-Type', ''):
@@ -229,10 +218,10 @@ def handler(store):
             except Exception:
                 self.respond({'error': {'message': 'Local demo service could not complete the request'}}, 503)
 
-        def video(self):
-            path = ASSETS / 'playback.mp4'
+        def video(self, reference=False):
+            path = ASSETS / ('reference.mp4' if reference else 'playback.mp4')
             if not path.is_file():
-                raise Problem('Prepared playback asset unavailable; run prepare_demo.py', 503)
+                raise Problem('Prepared playback asset unavailable; run prepare_motion_demo.py', 503)
             size = path.stat().st_size
             start, end, status = 0, size-1, 200
             header = self.headers.get('Range')
@@ -268,7 +257,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8765)
     args = parser.parse_args()
-    store = Store(os.environ.get('HOLYCOW_DEMO_STATE', ROOT / 'demo-state'))
+    store = Store(os.environ.get('HOLYCOW_DEMO_STATE', ROOT / 'motion-demo-state'))
     server = ThreadingHTTPServer(('127.0.0.1', args.port), handler(store))
     print(f'HolyCow local demo service http://127.0.0.1:{args.port}', flush=True)
     server.serve_forever()

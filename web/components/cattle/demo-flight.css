@@ -21,6 +21,14 @@
 .demo-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .demo-overlay rect { fill: transparent; stroke: #a4ff68; stroke-width: 5; pointer-events: auto; cursor: pointer; }
 .demo-overlay rect.selected { stroke: #ffce55; stroke-width: 10; fill: #ffce5533; }
+.demo-overlay .demo-segmentation { fill: #13d44416; stroke: #13d444; stroke-width: 1; }
+.demo-overlay .demo-bone { stroke: #f5fafa; stroke-width: 1.5; }
+.demo-overlay .demo-keypoint { fill: #13d444; }
+.demo-overlay text { fill: white; stroke: #10241a; stroke-width: 3; paint-order: stroke; font-size: 12px; font-weight: 600; }
+.demo-score-notice { color: #75530b; background: #fff8e5; border-radius: 8px; padding: 10px 12px; margin: 12px 0; font-size: 13px; line-height: 1.5; }
+.demo-reference { margin-top: 16px; }
+.demo-reference summary { cursor: pointer; font-size: 13px; font-weight: 600; }
+.demo-reference video { display: block; width: 100%; margin-top: 12px; border-radius: 10px; }
 .demo-evidence-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 22px; }
 .demo-evidence h3 { font-size: 14px; margin: 0 0 12px; }
 .demo-evidence h3.demo-detection-heading { margin-top: 18px; }

@@ -9,4 +9,5 @@ export const demoApi = {
   review: (id: string, detectionId: string, action: DemoReview["action"], note: string, expectedSeq: number) => api<DemoJob>(`${root}/jobs/${encodeURIComponent(id)}/reviews`, post({ detectionId, action, note, expectedSeq })),
   reset: () => api(`${root}/reset`, post({})),
   video: `${root}/assets/scene-video`,
+  referenceVideo: `${root}/assets/reference-video`,
 };

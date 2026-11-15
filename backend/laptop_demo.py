@@ -23,13 +23,14 @@ from .run import load_local_env
 ROOT = Path(__file__).resolve().parents[1]
 SITE = 'https://holycow-herd-monitor.freebream261.chatgpt.site'
 SETTINGS = ROOT / 'backend' / '.env.laptop.json'
+STOP_REQUEST = ROOT / 'backend' / 'state' / 'laptop-demo.stop'
 
 
 def target(method, path):
     """Fixed upstreams only; never forward caller-selected hosts or file paths."""
     flight = path.removeprefix('/flight')
     if path.startswith('/flight/'):
-        if method == 'GET' and re.fullmatch(r'/(jobs|jobs/[a-f0-9]{32}|assets/scene-video)', flight):
+        if method == 'GET' and re.fullmatch(r'/(jobs|jobs/[a-f0-9]{32}|assets/(scene-video|reference-video))', flight):
             return 8765, flight
         if method == 'POST' and re.fullmatch(r'/(jobs|reset|jobs/[a-f0-9]{32}/reviews)', flight):
             return 8765, flight
@@ -177,9 +178,9 @@ def main():
     python = ROOT / 'backend/.venv/Scripts/python.exe'
     ml_python = ROOT.parent / '.cow-vision-venv/Scripts/python.exe'
     cloudflared = ROOT / 'backend/tools/cloudflared.exe'
-    source = Path(settings.get('source', ''))
+    source = ROOT / 'ml/motion-demo-assets/playback.mp4'
     if not source.is_file():
-        raise ValueError('Original demo video missing. Update source in backend/.env.laptop.json')
+        raise ValueError('Motion demo playback missing. Run ml/prepare_motion_demo.py first.')
     env = dict(os.environ, HOLYCOW_DEMO_SOURCE=str(source))
     children = []
     logs = []
@@ -196,6 +197,8 @@ def main():
                 continue
             with socket.socket() as check:
                 check.bind(('127.0.0.1', port))
+        if not check_only:
+            STOP_REQUEST.unlink(missing_ok=True)
         for name, command in (
             ('notifications', [str(python), '-m', 'uvicorn', 'backend.app:create_app', '--factory', '--host', '127.0.0.1', '--port', str(notification_port), '--workers', '1', '--no-access-log']),
             ('flight', [str(ml_python), '-u', 'ml/demo_service.py', '--port', str(flight_port)]),
@@ -286,7 +289,11 @@ def main():
         print(f'CONNECTED: {SITE}\nKeep this window open. Ctrl+C turns the public backend OFF.', flush=True)
         print('Judges can process the demo flight and request the Telegram demo while connected.', flush=True)
         while True:
-            time.sleep(25)
+            for _ in range(25):
+                if STOP_REQUEST.exists():
+                    STOP_REQUEST.unlink(missing_ok=True)
+                    raise KeyboardInterrupt
+                time.sleep(1)
             if any(process.poll() is not None for process in children):
                 raise RuntimeError('A service stopped; disconnecting the public backend')
             try:
